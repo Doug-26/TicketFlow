@@ -1,0 +1,83 @@
+<div class="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+
+  <!-- Sidebar -->
+  <aside class="w-60 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden md:flex md:flex-col">
+    <div class="h-16 flex items-center gap-2 px-5 border-b border-slate-200 dark:border-slate-800">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold">T</div>
+      <span class="font-semibold tracking-tight">TicketFlow</span>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <a routerLink="/dashboard"
+         routerLinkActive="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/>
+        </svg>
+        Dashboard
+      </a>
+
+      @if (auth.isAdmin()) {
+        <a routerLink="/master"
+           routerLinkActive="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/>
+          </svg>
+          Master Data
+        </a>
+      }
+    </nav>
+
+    <div class="p-3 text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
+      v0.1 · MVP
+    </div>
+  </aside>
+
+  <!-- Main column -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- Topbar -->
+    <header class="h-16 px-5 flex items-center justify-end gap-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+
+      <!-- Theme toggle -->
+      <button (click)="toggleTheme()"
+              class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 transition-colors"
+              [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">
+        @if (theme.theme() === 'dark') {
+          <!-- sun icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m0-13.728l1.414 1.414m11.314 11.314l1.414 1.414M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        } @else {
+          <!-- moon icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+          </svg>
+        }
+      </button>
+
+      <!-- User chip -->
+      <div class="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-slate-800">
+        <div class="text-right">
+          <div class="text-sm font-medium leading-tight">{{ auth.currentUser()?.fullName }}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ auth.currentUser()?.role }}</div>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center text-sm font-semibold">
+          {{ initials() }}
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button (click)="logout()"
+              class="ml-1 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 transition-colors">
+        Logout
+      </button>
+    </header>
+
+    <!-- Routed content -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+# =========================
+#  TicketFlow root .gitignore
+# =========================
+
+# Claude Code local-only settings
+.claude/
+
+# ---- .NET / Visual Studio ----
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+
+# ---- Node / Angular ----
+**/node_modules/
+**/dist/
+**/.angular/
+**/tmp/
+**/out-tsc/
+
+# ---- OS / editor cruft ----
+.DS_Store
+Thumbs.db
+*.swp
+*.log

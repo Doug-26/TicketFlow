@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (toggle by adding/removing 'dark' on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Smooth theme transitions on the body element. */
+html, body {
+  height: 100%;
+}
+body {
+  @apply bg-slate-50 text-slate-900 antialiased transition-colors duration-200;
+}
+html.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
