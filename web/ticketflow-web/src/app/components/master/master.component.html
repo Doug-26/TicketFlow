@@ -1,42 +1,35 @@
 <div class="space-y-6">
   <!-- Header + toggle -->
-  <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+  <header class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Master Data</h1>
-      <p class="text-sm text-slate-500 dark:text-slate-400">Manage Departments and Request Types from one place.</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Manage the foundational lookup tables in one place.</p>
     </div>
 
-    <!-- Segmented control -->
-    <nav role="tablist" class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700">
-      <button role="tab"
-              (click)="setTab('departments')"
-              [attr.aria-selected]="tab() === 'departments'"
-              [class.bg-white]="tab() === 'departments'"
-              [class.dark:bg-slate-900]="tab() === 'departments'"
-              [class.shadow-sm]="tab() === 'departments'"
-              [class.text-slate-900]="tab() === 'departments'"
-              [class.dark:text-slate-100]="tab() === 'departments'"
-              class="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all">
-        Departments
-      </button>
-      <button role="tab"
-              (click)="setTab('request-types')"
-              [attr.aria-selected]="tab() === 'request-types'"
-              [class.bg-white]="tab() === 'request-types'"
-              [class.dark:bg-slate-900]="tab() === 'request-types'"
-              [class.shadow-sm]="tab() === 'request-types'"
-              [class.text-slate-900]="tab() === 'request-types'"
-              [class.dark:text-slate-100]="tab() === 'request-types'"
-              class="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all">
-        Request Types
-      </button>
+    <!-- Segmented control / scrollable on small screens -->
+    <nav role="tablist" class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700 overflow-x-auto">
+      @for (t of tabs; track t.id) {
+        <button role="tab"
+                (click)="setTab(t.id)"
+                [attr.aria-selected]="tab() === t.id"
+                [class.bg-white]="tab() === t.id"
+                [class.dark:bg-slate-900]="tab() === t.id"
+                [class.shadow-sm]="tab() === t.id"
+                [class.text-slate-900]="tab() === t.id"
+                [class.dark:text-slate-100]="tab() === t.id"
+                class="whitespace-nowrap px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all">
+          {{ t.label }}
+        </button>
+      }
     </nav>
   </header>
 
   <!-- Panels -->
-  @if (tab() === 'departments') {
-    <app-departments-panel />
-  } @else {
-    <app-request-types-panel />
+  @switch (tab()) {
+    @case ('departments')   { <app-departments-panel /> }
+    @case ('request-types') { <app-request-types-panel /> }
+    @case ('fields')        { <app-request-type-fields-panel /> }
+    @case ('roles')         { <app-roles-panel /> }
+    @case ('heads')         { <app-department-heads-panel /> }
   }
 </div>

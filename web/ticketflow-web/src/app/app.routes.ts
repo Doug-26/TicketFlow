@@ -19,6 +19,7 @@ export const routes: Routes = [
       import('./components/shell/shell.component').then((m) => m.ShellComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+
       {
         path: 'dashboard',
         loadComponent: () =>
@@ -26,6 +27,41 @@ export const routes: Routes = [
             (m) => m.DashboardComponent
           )
       },
+
+      // Tickets (any logged-in user)
+      {
+        path: 'tickets',
+        loadComponent: () =>
+          import('./components/tickets/tickets-list.component').then(
+            (m) => m.TicketsListComponent
+          )
+      },
+      {
+        path: 'tickets/new',
+        loadComponent: () =>
+          import('./components/tickets/ticket-create.component').then(
+            (m) => m.TicketCreateComponent
+          )
+      },
+      {
+        path: 'tickets/:id',
+        loadComponent: () =>
+          import('./components/tickets/ticket-detail.component').then(
+            (m) => m.TicketDetailComponent
+          )
+      },
+
+      // Employees (HR or Admin)
+      {
+        path: 'employees',
+        canActivate: [roleGuard([ROLES.HR, ROLES.Admin])],
+        loadComponent: () =>
+          import('./components/employees/employees.component').then(
+            (m) => m.EmployeesComponent
+          )
+      },
+
+      // Master data (Admin only)
       {
         path: 'master',
         canActivate: [roleGuard([ROLES.Admin])],
@@ -33,7 +69,6 @@ export const routes: Routes = [
           import('./components/master/master.component').then((m) => m.MasterComponent)
       },
       {
-        // The toggle inside MasterComponent navigates to /master/:tab.
         path: 'master/:tab',
         canActivate: [roleGuard([ROLES.Admin])],
         loadComponent: () =>

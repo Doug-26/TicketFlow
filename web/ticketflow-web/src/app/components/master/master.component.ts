@@ -3,33 +3,45 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { DepartmentsPanelComponent } from './departments-panel.component';
 import { RequestTypesPanelComponent } from './request-types-panel.component';
+import { RequestTypeFieldsPanelComponent } from './request-type-fields-panel.component';
+import { RolesPanelComponent } from './roles-panel.component';
+import { DepartmentHeadsPanelComponent } from './department-heads-panel.component';
 
-type Tab = 'departments' | 'request-types';
+type Tab = 'departments' | 'request-types' | 'fields' | 'roles' | 'heads';
 
-// Master Data page with a segmented toggle:
-//   /master                 -> Departments tab (default)
-//   /master/departments     -> Departments tab
-//   /master/request-types   -> Request Types tab
+const VALID_TABS: Tab[] = ['departments', 'request-types', 'fields', 'roles', 'heads'];
+
+interface TabDef { id: Tab; label: string; }
+
 @Component({
   selector: 'app-master',
   standalone: true,
-  imports: [DepartmentsPanelComponent, RequestTypesPanelComponent],
+  imports: [
+    DepartmentsPanelComponent,
+    RequestTypesPanelComponent,
+    RequestTypeFieldsPanelComponent,
+    RolesPanelComponent,
+    DepartmentHeadsPanelComponent
+  ],
   templateUrl: './master.component.html'
 })
 export class MasterComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  readonly tabs: TabDef[] = [
+    { id: 'departments',   label: 'Departments' },
+    { id: 'request-types', label: 'Request Types' },
+    { id: 'fields',        label: 'Request Type Fields' },
+    { id: 'roles',         label: 'Roles' },
+    { id: 'heads',         label: 'Department Heads' }
+  ];
+
   readonly tab = signal<Tab>('departments');
 
   ngOnInit(): void {
-    // Restore the chosen tab from the URL when arriving via deep link / refresh.
-    const param = this.route.snapshot.paramMap.get('tab');
-    if (param === 'request-types') {
-      this.tab.set('request-types');
-    } else {
-      this.tab.set('departments');
-    }
+    const param = this.route.snapshot.paramMap.get('tab') as Tab | null;
+    this.tab.set(param && VALID_TABS.includes(param) ? param : 'departments');
   }
 
   setTab(t: Tab): void {

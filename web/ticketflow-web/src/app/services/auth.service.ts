@@ -27,6 +27,11 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this._token() !== null);
   /** Convenience: true when the logged-in user is an Admin. */
   readonly isAdmin = computed(() => this._user()?.role === ROLES.Admin);
+  /** Convenience: true when the user can manage employees (HR or Admin). */
+  readonly canManageEmployees = computed(() => {
+    const role = this._user()?.role;
+    return role === ROLES.HR || role === ROLES.Admin;
+  });
 
   /** POST /api/auth/login — stores token + user, then resolves. */
   async login(req: LoginRequest): Promise<LoginResponse> {
