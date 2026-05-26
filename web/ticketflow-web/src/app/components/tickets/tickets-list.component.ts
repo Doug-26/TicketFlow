@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Ticket } from '../../models/ticket.model';
@@ -11,8 +11,8 @@ type StatusFilter = '' | 'Open' | 'InProgress' | 'Closed';
 
 @Component({
   selector: 'app-tickets-list',
-  standalone: true,
   imports: [RouterLink, DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
       <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">

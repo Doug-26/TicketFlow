@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
 
 import { Employee } from '../../models/employee.model';
 import { RequestTypeField } from '../../models/request-type-field.model';
@@ -13,6 +13,7 @@ import { EmployeesService } from '../../services/employees.service';
 import { RequestTypeFieldsService } from '../../services/request-type-fields.service';
 import { TicketStatusHistoryService } from '../../services/ticket-status-history.service';
 import { TicketsService } from '../../services/tickets.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 const STATUSES = ['Open', 'InProgress', 'Closed'];
 
@@ -20,8 +21,8 @@ interface AnswerRow { label: string; value: string; }
 
 @Component({
   selector: 'app-ticket-detail',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
       <div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400">Loading…</div>
@@ -252,18 +253,19 @@ export class TicketDetailComponent implements OnInit {
           STATUSES.find((s) => s !== ticket.status) ?? ticket.status
         );
 
-        // Field labels + (for Admins) eligible assignees, loaded in parallel.
-        const more = this.auth.isAdmin()
-          ? forkJoin({
-              fields: this.fieldsApi.getByType(ticket.requestTypeId),
-              emps: this.empApi.getByDepartment(ticket.departmentId)
-            })
-          : forkJoin({ fields: this.fieldsApi.getByType(ticket.requestTypeId) });
+        // Field labels + (for Admins only) eligible assignees, loaded in parallel.
+        // Always emit the same shape so downstream code can stay strictly typed.
+        const emps$: Observable<Employee[]> = this.auth.isAdmin()
+          ? this.empApi.getByDepartment(ticket.departmentId)
+          : of([]);
 
-        more.subscribe({
-          next: (res: any) => {
+        forkJoin({
+          fields: this.fieldsApi.getByType(ticket.requestTypeId),
+          emps: emps$
+        }).subscribe({
+          next: (res) => {
             this.fields.set(res.fields);
-            if (res.emps) this.deptEmployees.set(res.emps);
+            this.deptEmployees.set(res.emps);
             this.loading.set(false);
           },
           error: () => this.loading.set(false)
@@ -289,8 +291,8 @@ export class TicketDetailComponent implements OnInit {
         this.statusForm.controls.remarks.setValue('');
         this.loadAll(t.ticketId);
       },
-      error: (err) => {
-        this.actionError.set(err?.error?.message ?? 'Could not change status.');
+      error: (err: unknown) => {
+        this.actionError.set(toErrorMessage(err, 'Could not change status.'));
         this.changing.set(false);
       }
     });
@@ -310,8 +312,8 @@ export class TicketDetailComponent implements OnInit {
         this.assignForm.reset({ assignedToEmployeeId: null });
         this.loadAll(t.ticketId);
       },
-      error: (err) => {
-        this.actionError.set(err?.error?.message ?? 'Could not assign.');
+      error: (err: unknown) => {
+        this.actionError.set(toErrorMessage(err, 'Could not assign.'));
         this.assigning.set(false);
       }
     });

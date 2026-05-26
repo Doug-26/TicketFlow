@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { RequestType } from '../../models/request-type.model';
@@ -9,13 +9,14 @@ import {
 } from '../../models/request-type-field.model';
 import { RequestTypesService } from '../../services/request-types.service';
 import { RequestTypeFieldsService } from '../../services/request-type-fields.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 // Admin tab: define the dynamic fields that a Request Type asks for.
 // Pick a request type first (top dropdown), then manage its fields below.
 @Component({
   selector: 'app-request-type-fields-panel',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
 
@@ -274,7 +275,7 @@ export class RequestTypeFieldsPanelComponent implements OnInit {
     };
     const id = this.editingId();
     const finish = () => { this.submitting.set(false); this.cancelEdit(); this.loadFields(); };
-    const handleErr = (err: any) => { this.serverError.set(err?.error?.message ?? 'Save failed.'); this.submitting.set(false); };
+    const handleErr = (err: unknown) => { this.serverError.set(toErrorMessage(err, 'Save failed.')); this.submitting.set(false); };
 
     if (id == null) {
       this.fieldsApi.create({ ...payload, requestTypeId: typeId }).subscribe({ next: finish, error: handleErr });
@@ -287,7 +288,7 @@ export class RequestTypeFieldsPanelComponent implements OnInit {
     if (!confirm(`Delete field "${f.fieldLabel}"? This cannot be undone.`)) return;
     this.fieldsApi.delete(f.requestTypeFieldId).subscribe({
       next: () => this.loadFields(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Delete failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Delete failed.'))
     });
   }
 }

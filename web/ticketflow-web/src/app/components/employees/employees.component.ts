@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
@@ -8,12 +8,13 @@ import { Role } from '../../models/role.model';
 import { DepartmentsService } from '../../services/departments.service';
 import { EmployeesService } from '../../services/employees.service';
 import { RolesService } from '../../services/roles.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 // HR/Admin top-level page: list + inline create/edit form for employees.
 @Component({
   selector: 'app-employees',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
       <header>
@@ -255,7 +256,7 @@ export class EmployeesComponent implements OnInit {
     const v = this.form.getRawValue();
     const id = this.editingId();
     const finish = () => { this.submitting.set(false); this.cancelEdit(); this.load(); };
-    const handleErr = (err: any) => { this.serverError.set(err?.error?.message ?? 'Save failed.'); this.submitting.set(false); };
+    const handleErr = (err: unknown) => { this.serverError.set(toErrorMessage(err, 'Save failed.')); this.submitting.set(false); };
 
     if (id == null) {
       this.empApi.create({
@@ -281,7 +282,7 @@ export class EmployeesComponent implements OnInit {
     if (!confirm(`Deactivate ${e.fullName}?`)) return;
     this.empApi.delete(e.employeeId).subscribe({
       next: () => this.load(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Deactivate failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Deactivate failed.'))
     });
   }
 }

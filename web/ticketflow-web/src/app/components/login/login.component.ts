@@ -1,14 +1,23 @@
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 transition-colors">
 
@@ -90,7 +99,7 @@ import { ThemeService } from '../../services/theme.service';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -125,11 +134,8 @@ export class LoginComponent {
     try {
       await this.auth.login(this.form.getRawValue());
       this.router.navigateByUrl('/dashboard');
-    } catch (err: any) {
-      const msg =
-        err?.error?.message ??
-        (err?.status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.');
-      this.serverError.set(msg);
+    } catch (err: unknown) {
+      this.serverError.set(toErrorMessage(err, 'Invalid email or password.'));
     } finally {
       this.submitting.set(false);
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { DepartmentsPanelComponent } from './departments-panel.component';
@@ -15,7 +15,6 @@ interface TabDef { id: Tab; label: string; }
 
 @Component({
   selector: 'app-master',
-  standalone: true,
   imports: [
     DepartmentsPanelComponent,
     RequestTypesPanelComponent,
@@ -23,7 +22,8 @@ interface TabDef { id: Tab; label: string; }
     RolesPanelComponent,
     DepartmentHeadsPanelComponent
   ],
-  templateUrl: './master.component.html'
+  templateUrl: './master.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MasterComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

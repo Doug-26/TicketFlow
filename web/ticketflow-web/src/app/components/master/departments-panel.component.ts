@@ -1,14 +1,15 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Department } from '../../models/department.model';
 import { DepartmentsService } from '../../services/departments.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 // Inline CRUD UI for Departments. List + form on the same screen.
 @Component({
   selector: 'app-departments-panel',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -183,8 +184,8 @@ export class DepartmentsPanelComponent implements OnInit {
       this.load();
     };
 
-    const handleErr = (err: any) => {
-      this.serverError.set(err?.error?.message ?? 'Save failed.');
+    const handleErr = (err: unknown) => {
+      this.serverError.set(toErrorMessage(err, 'Save failed.'));
       this.submitting.set(false);
     };
 
@@ -206,7 +207,7 @@ export class DepartmentsPanelComponent implements OnInit {
     if (!confirm(`Delete department "${d.name}"? (Soft delete — it will be deactivated.)`)) return;
     this.api.delete(d.departmentId).subscribe({
       next: () => this.load(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Delete failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Delete failed.'))
     });
   }
 }

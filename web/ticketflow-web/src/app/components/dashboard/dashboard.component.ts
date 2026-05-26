@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -15,8 +15,8 @@ interface StatCard {
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
   imports: [DatePipe, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
       <header class="flex items-end justify-between flex-wrap gap-3">

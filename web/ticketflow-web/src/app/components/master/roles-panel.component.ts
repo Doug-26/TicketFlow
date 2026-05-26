@@ -1,13 +1,14 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Role } from '../../models/role.model';
 import { RolesService } from '../../services/roles.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 @Component({
   selector: 'app-roles-panel',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -148,7 +149,7 @@ export class RolesPanelComponent implements OnInit {
     const v = this.form.getRawValue();
     const id = this.editingId();
     const finish = () => { this.submitting.set(false); this.cancelEdit(); this.load(); };
-    const handleErr = (err: any) => { this.serverError.set(err?.error?.message ?? 'Save failed.'); this.submitting.set(false); };
+    const handleErr = (err: unknown) => { this.serverError.set(toErrorMessage(err, 'Save failed.')); this.submitting.set(false); };
 
     if (id == null) {
       this.api.create({ name: v.name.trim() }).subscribe({ next: finish, error: handleErr });
@@ -161,7 +162,7 @@ export class RolesPanelComponent implements OnInit {
     if (!confirm(`Delete role "${r.name}"? (Soft delete.)`)) return;
     this.api.delete(r.roleId).subscribe({
       next: () => this.load(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Delete failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Delete failed.'))
     });
   }
 }

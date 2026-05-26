@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
@@ -9,12 +9,13 @@ import { DepartmentHead } from '../../models/department-head.model';
 import { DepartmentsService } from '../../services/departments.service';
 import { EmployeesService } from '../../services/employees.service';
 import { DepartmentHeadsService } from '../../services/department-heads.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 // Admin-only panel: assign the active head of each department.
 @Component({
   selector: 'app-department-heads-panel',
-  standalone: true,
   imports: [ReactiveFormsModule, DatePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -197,8 +198,8 @@ export class DepartmentHeadsPanelComponent implements OnInit {
         this.form.reset({ departmentId: null, employeeId: null });
         this.load();
       },
-      error: (err) => {
-        this.serverError.set(err?.error?.message ?? 'Assign failed.');
+      error: (err: unknown) => {
+        this.serverError.set(toErrorMessage(err, 'Assign failed.'));
         this.submitting.set(false);
       }
     });
@@ -209,7 +210,7 @@ export class DepartmentHeadsPanelComponent implements OnInit {
     if (!confirm(`Remove the head from "${name}"?`)) return;
     this.api.delete(h.departmentHeadId).subscribe({
       next: () => this.load(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Remove failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Remove failed.'))
     });
   }
 }

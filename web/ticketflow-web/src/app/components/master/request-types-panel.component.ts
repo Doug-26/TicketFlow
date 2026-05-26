@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
@@ -6,12 +6,13 @@ import { Department } from '../../models/department.model';
 import { RequestType } from '../../models/request-type.model';
 import { DepartmentsService } from '../../services/departments.service';
 import { RequestTypesService } from '../../services/request-types.service';
+import { toErrorMessage } from '../../services/http-error.util';
 
 // Inline CRUD UI for Request Types. List + form on the same screen.
 @Component({
   selector: 'app-request-types-panel',
-  standalone: true,
   imports: [ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -215,8 +216,8 @@ export class RequestTypesPanelComponent implements OnInit {
       this.cancelEdit();
       this.load();
     };
-    const handleErr = (err: any) => {
-      this.serverError.set(err?.error?.message ?? 'Save failed.');
+    const handleErr = (err: unknown) => {
+      this.serverError.set(toErrorMessage(err, 'Save failed.'));
       this.submitting.set(false);
     };
 
@@ -238,7 +239,7 @@ export class RequestTypesPanelComponent implements OnInit {
     if (!confirm(`Delete request type "${rt.name}"? (Soft delete — it will be deactivated.)`)) return;
     this.rtApi.delete(rt.requestTypeId).subscribe({
       next: () => this.load(),
-      error: (err) => this.serverError.set(err?.error?.message ?? 'Delete failed.')
+      error: (err: unknown) => this.serverError.set(toErrorMessage(err, 'Delete failed.'))
     });
   }
 }

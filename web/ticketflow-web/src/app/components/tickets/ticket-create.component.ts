@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -18,12 +18,17 @@ import { DepartmentsService } from '../../services/departments.service';
 import { RequestTypesService } from '../../services/request-types.service';
 import { RequestTypeFieldsService } from '../../services/request-type-fields.service';
 import { TicketsService } from '../../services/tickets.service';
+import { toErrorMessage } from '../../services/http-error.util';
+
+// Default form value per field type. Wider than `unknown` because Angular
+// FormControl needs a real value (or null) at construction time.
+type DynamicFieldValue = string | number | boolean | null;
 
 // "Raise ticket" form. The dynamic part adapts to the chosen RequestType.
 @Component({
   selector: 'app-ticket-create',
-  standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6 max-w-3xl mx-auto">
       <header class="flex items-center justify-between">
@@ -278,7 +283,7 @@ export class TicketCreateComponent implements OnInit {
     this.form.setControl('fields', group);
   }
 
-  private defaultFor(type: FieldType): any {
+  private defaultFor(type: FieldType): DynamicFieldValue {
     if (type === 'checkbox') return false;
     return null; // text/number/select/radio/date start empty
   }
@@ -303,8 +308,8 @@ export class TicketCreateComponent implements OnInit {
         this.submitting.set(false);
         this.router.navigate(['/tickets', created.ticketId]);
       },
-      error: (err) => {
-        this.serverError.set(err?.error?.message ?? 'Could not raise ticket.');
+      error: (err: unknown) => {
+        this.serverError.set(toErrorMessage(err, 'Could not raise ticket.'));
         this.submitting.set(false);
       }
     });
