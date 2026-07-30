@@ -32,7 +32,7 @@ interface StatCard {
       </header>
 
       <!-- Stat cards (real counts from the API) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         @for (card of cards(); track card.label) {
           <div class="rounded-xl bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800 p-5 shadow-sm transition-colors">
             <div class="flex items-center justify-between">
@@ -96,11 +96,13 @@ export class DashboardComponent implements OnInit {
   readonly cards = computed<StatCard[]>(() => {
     const all = this.tickets();
     const open = all.filter((t) => t.status === 'Open').length;
+    const inProgress = all.filter((t) => t.status === 'InProgress').length;
     const closed = all.filter((t) => t.status === 'Closed').length;
     return [
-      { label: 'All tickets', value: all.length, tag: 'Total',  badgeClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' },
-      { label: 'Open',        value: open,       tag: 'Active', badgeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' },
-      { label: 'Closed',      value: closed,     tag: 'Done',   badgeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' }
+      { label: 'All tickets', value: all.length,  tag: 'Total',    badgeClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' },
+      { label: 'Open',        value: open,        tag: 'Active',   badgeClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' },
+      { label: 'In progress', value: inProgress,  tag: 'Working',  badgeClass: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300' },
+      { label: 'Closed',      value: closed,      tag: 'Done',     badgeClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' }
     ];
   });
 

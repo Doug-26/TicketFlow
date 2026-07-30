@@ -189,15 +189,25 @@ export class RequestTypeFieldsPanelComponent implements OnInit {
     displayOrder: [0]
   });
 
+  // Mirror fieldType as a signal so `needsOptions` (a computed) actually
+  // re-evaluates when the user changes the field type. Reading
+  // FormControl.value inside computed() does NOT register a dependency.
+  private readonly fieldTypeSig = signal<FieldType>('text');
+
   // 'select' and 'radio' need an options list. Other types ignore it.
   readonly needsOptions = computed(() => {
-    const t = this.form.controls.fieldType.value;
+    const t = this.fieldTypeSig();
     return t === 'select' || t === 'radio';
   });
 
   ngOnInit(): void {
     this.typesApi.getAll().subscribe({
       next: (list) => this.types.set(list)
+    });
+
+    // Keep the fieldType signal in lockstep with the form control.
+    this.form.controls.fieldType.valueChanges.subscribe((v) => {
+      this.fieldTypeSig.set(v);
     });
   }
 

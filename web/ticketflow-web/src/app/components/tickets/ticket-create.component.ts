@@ -199,6 +199,12 @@ export class TicketCreateComponent implements OnInit {
   readonly submitting = signal(false);
   readonly serverError = signal<string | null>(null);
 
+  // Mirror of departmentId form control as a signal so `filteredRequestTypes`
+  // (a computed) actually re-evaluates when the department changes.
+  // FormControl.value is a plain property — reading it inside computed() does
+  // NOT register a dependency, so we bridge via this signal in ngOnInit.
+  private readonly selectedDepartmentId = signal<number | null>(null);
+
   // The main form. Dynamic answers live in a child FormGroup we rebuild on type change.
   readonly form = this.fb.nonNullable.group({
     departmentId: this.fb.control<number | null>(null, { validators: [Validators.required] }),
@@ -215,7 +221,7 @@ export class TicketCreateComponent implements OnInit {
 
   // Filter request types to the chosen department.
   readonly filteredRequestTypes = computed(() => {
-    const id = this.form.controls.departmentId.value;
+    const id = this.selectedDepartmentId();
     if (!id) return [];
     return this.requestTypes().filter((rt) => rt.departmentId === id && rt.isActive);
   });
@@ -226,7 +232,8 @@ export class TicketCreateComponent implements OnInit {
     this.rtApi.getAll().subscribe({ next: (r) => this.requestTypes.set(r) });
 
     // When dept changes, reset request type and fields.
-    this.form.controls.departmentId.valueChanges.subscribe(() => {
+    this.form.controls.departmentId.valueChanges.subscribe((v) => {
+      this.selectedDepartmentId.set(v);
       this.form.controls.requestTypeId.setValue(null);
       this.fields.set([]);
       this.rebuildDynamicGroup([]);
